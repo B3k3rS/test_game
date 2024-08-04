@@ -7,9 +7,11 @@ body {
     background: #272727;
     font-family: 'Courier New', Courier, monospace;
     font-weight: 900;
+    transition: 1s;
 }
 
 #game_field,
+#game_button,
 #game_field > div {
     display: flex;
     align-items: center;
@@ -18,7 +20,8 @@ body {
     margin: 0 auto;
 }
 
-#game_field {
+#game_field,
+#game_button {
     width: 240px;
     background: #2a1b3d;
     padding: 20px;
@@ -33,5 +36,14 @@ body {
     background: #8265A8;
     border-radius: 5px;
     margin: 5px;
+    cursor: pointer;
+}
+
+#game_button button {
+    padding: 10px 20px;
+    border-radius: 5px;
+    background: #8265A8;
+    border: none;
+    color: #fff;
     cursor: pointer;
 }

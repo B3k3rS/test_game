@@ -1,97 +1,54 @@
 const gameField = document.querySelector('#game_field');
-let gameSize = 4;
-let gameArray = [];
+const gamePlate = document.querySelectorAll('#game_field > div')
+const zeroPlate = document.querySelector('#game_field .zero_plate')
+const mixButton = document.querySelector('button.mix_game')
 
-function startGame() {
-    // fill matrix
-    for (let i = 0; i < gameSize; i++) {
-        let tmpArr = [];
-        for (let j = 0; j < gameSize; j++) {
-            tmpArr.push(j+i*4);
-        }
-        gameArray.push(tmpArr);
-    }
-
-    // mix matrix
-    for (let i = 0; i < gameSize; i++) {
-        for (let j = 0; j < gameSize; j++) {
-            let rand1 = Math.floor(Math.random()*4);
-            let rand2 = Math.floor(Math.random()*4);
-
-            let tmpNumber = gameArray[i][j];
-            gameArray[i][j] = gameArray[rand2][rand1];
-            gameArray[rand2][rand1] = tmpNumber;
-        }
-    }
-
-    drawGame()
-}
-
-function movePlate(numberOnPlate) {
-
-    // number cords
-    let number_x,number_y;
-    for (let i = 0; i < gameSize; i++) {
-        for (let j = 0; j < gameSize; j++) {
-            if (gameArray[i][j] == numberOnPlate) {
-                number_y = i;
-                number_x = j;
-            }
-        }
-    }
-
-    // zero cords
-    let zero_x, zero_y;
-    for (let i = 0; i < gameSize; i++) {
-        for (let j = 0; j < gameSize; j++) {
-            if (gameArray[i][j] == 0) {
-                zero_y = i;
-                zero_x = j;
-            }
-        }
-    }
-
-    if ( 
-        zero_x - number_x < -1 || 
-        number_x - zero_x < -1 ||
-        zero_y - number_y < -1 || 
-        number_y - zero_y < -1 ||
-        number_x - zero_x != 0 && number_y - zero_y != 0
-    ) { 
-        console.log(`wrong click`)
-        return 0
-    }
-
-    let tmpNumber = gameArray[number_y][number_x];
-    gameArray[number_y][number_x] = 0;
-    gameArray[zero_y][zero_x] = tmpNumber;
-    
-    drawGame()
-}
-
-let plateList = [];
-function drawGame() {
-    let strHTML = ``;
-
-    for (let i = 0; i < gameSize; i++) {
-        for (let j = 0; j < gameSize; j++) {
-            if (gameArray[i][j] == 0) {
-                strHTML += `<div style="visibility:hidden;">${gameArray[i][j]}</div>`
-            } 
-            else {
-                strHTML += `<div>${gameArray[i][j]}</div>`
-            }
-        }
-    }
-
-    gameField.innerHTML = strHTML;
-
-    plateList = document.querySelectorAll('#game_field > div')
-    plateList.forEach((plate) => {
+gamePlate.forEach((plate) => {
     plate.addEventListener('click', () => {
-        movePlate(plate.textContent)
+        if (clickValidate(plate.style.order,zeroPlate.style.order)) {
+            movePlate(plate,zeroPlate);
+        }
     })
 })
+
+mixButton.addEventListener('click', () => {
+    mixGame();
+})
+
+function mixGame() {
+    gamePlate.forEach((plate) => {
+        if (plate.style.order == 16) return 0;
+        let random = Math.floor(Math.random() * 15)
+        movePlate(plate,gamePlate[random])
+    })
 }
 
-startGame();
+function clickValidate(plateOrder, zeroOrder) {
+    if (
+        Math.max(plateOrder,zeroOrder) - Math.min(plateOrder,zeroOrder) == 1 ||
+        Math.max(plateOrder,zeroOrder) - Math.min(plateOrder,zeroOrder) == 4
+    ) {
+        return true;
+    } 
+    return false;
+}
+
+function movePlate(plate1, plate2) {
+    let tmpOrder = plate1.style.order;
+    plate1.style.order = plate2.style.order;
+    plate2.style.order = tmpOrder;
+
+    checkWin()
+}
+
+function checkWin() {
+    let wrongPosition = 0;
+    gamePlate.forEach((plate, id) => {
+        console.log(plate.style.order,id+1)
+        if (plate.style.order != id+1) {
+            wrongPosition++;
+        }
+    })
+
+    if (!wrongPosition) setTimeout(()=> {alert('Победа')},100)
+}
