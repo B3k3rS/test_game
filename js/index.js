@@ -1,91 +1,76 @@
 const gameField = document.querySelector('#game_field');
+const gamePlate = document.querySelectorAll('#game_field > div')
+const zeroPlate = document.querySelector('#game_field .zero_plate')
 const mixButton = document.querySelector('button.mix_game')
-let gameArray = [
-    [[1],[2],[3],[4]],
-    [[5],[6],[7],[8]],
-    [[9],[10],[11],[12]],
-    [[13],[14],[15],[16]]
-];
+const gameSize = Math.floor(Math.sqrt(gamePlate.length))
+
+gamePlate.forEach((plate) => {
+    plate.addEventListener('click', () => {
+        if (!clickValidate(plate,zeroPlate)) return 0;
+        movePlate(plate,zeroPlate);
+        setTimeout(()=>{checkWin()},300)
+    })
+})
 
 mixButton.addEventListener('click', () => {
-    mixGame()
+    mixGame();
 })
 
 function mixGame() {
-    for (let i = 0; i < 4; i++) {
-        for (let j = 0; j < 4; j++) {
-            let rand1 = Math.floor(Math.random()*4);
-            let rand2 = Math.floor(Math.random()*4);
-
-            if(rand1 == rand2 & rand1 == 3 || i == j & i == 3) continue            
-            swapElement(i,j,rand1,rand2);
-        }
-    }
-
-    drawGame()
-}
-
-function swapElement(y_element1,x_element1,y_element2,x_element2) {
-    let tmpElement = gameArray[y_element1][x_element1];
-    gameArray[y_element1][x_element1] = gameArray[y_element2][x_element2];
-    gameArray[y_element2][x_element2] = tmpElement;
-}
-
-function drawGame() {
-    let tmpHTML = ""
-    for (let i = 0; i < 4; i++) {
-        for (let j = 0; j < 4; j++) {
-            tmpHTML += gameArray[i][j] == 16 ? `<div style="visibility:hidden;">${gameArray[i][j]}</div>` : `<div>${gameArray[i][j]}</div>`;
-        }
-    }
-    gameField.innerHTML = tmpHTML;
-
-    let gamePlate = document.querySelectorAll('#game_field > div')
-    gamePlate.forEach((plate)=>{
-        plate.addEventListener('click',() => {
-            movePlate(plate.textContent);
-        })
+    gamePlate.forEach((plate,id) => {
+        if (id == gamePlate.length-1) return 0;
+        let random = Math.floor(Math.random() * (gamePlate.length-1))
+        movePlate(plate,gamePlate[random])
     })
 }
 
-function movePlate(plateNumber) {
-    let numberCords = getCords(plateNumber);
-    let zeroCords = getCords(16);
+function clickValidate(plate, zero) {
+    let plateTop = parseInt(plate.style.top.replace(/\D/g,''))
+    let plateLeft = parseInt(plate.style.left.replace(/\D/g,''))
+    let zeroTop = parseInt(zero.style.top.replace(/\D/g,''))
+    let zeroLeft = parseInt(zero.style.left.replace(/\D/g,''))
 
-    if (!clickValidate(numberCords.i,numberCords.j,zeroCords.i,zeroCords.j)) return 0;
-    swapElement(numberCords.i,numberCords.j,zeroCords.i,zeroCords.j);
-    drawGame();
-    setTimeout(()=>{checkWin()},100)
-}
-
-function getCords(number) {
-    for (let i = 0; i < 4; i++) {
-        for (let j = 0; j < 4; j++) {
-            if (gameArray[i][j] == number) return {i,j};
-        }
-    }
-}
-
-function clickValidate(y_element1,x_element1,y_element2,x_element2) {
     if (
-        Math.max(y_element1,y_element2) - Math.min(y_element1,y_element2) > 1 ||
-        Math.max(x_element1,x_element2) - Math.min(x_element1,x_element2) > 1 ||
-        x_element1 - x_element2 != 0 && y_element1 - y_element2 != 0
+        Math.max(plateLeft,zeroLeft) - Math.min(plateLeft,zeroLeft) > 55 ||
+        Math.max(plateTop,zeroTop) - Math.min(plateTop,zeroTop) > 55 ||
+        plateTop - zeroTop != 0 & plateLeft - zeroLeft != 0
     ) {
         return false;
-    }
+    } 
     return true;
 }
 
-function checkWin() {
-    let wrongPossition = 0;
-    for (let i = 0; i < 4; i++) {
-        for (let j = 0; j < 4; j++) {
-            if (gameArray[i][j] != i*4+j+1) wrongPossition++;
-        }
-    }
-
-    if (wrongPossition == 0) alert('Победа')
+function movePlate(plate1, plate2) {
+    let tmpTop = plate1.style.top;
+    let tmpLeft = plate1.style.left;
+    plate1.style.top = plate2.style.top;
+    plate1.style.left = plate2.style.left;
+    plate2.style.top = tmpTop;
+    plate2.style.left = tmpLeft;
 }
 
-drawGame();
+function checkWin() {
+    let wrongPosition = 0;
+    gamePlate.forEach((plate, id) => {
+        if (
+            plate.style.top != `${Math.floor(id/gameSize) * 55+20}px` ||
+            plate.style.left != `${id%gameSize * 55+20}px`
+        ) {
+            wrongPosition++;
+        }
+    })
+
+    if (!wrongPosition) alert('Победа')
+}
+
+startGame()
+
+function startGame() {
+    gameField.style.width = `${gameSize * 50 + 55}px`;
+    gameField.style.height = `${gameSize * 50 + 55}px`;
+
+    gamePlate.forEach((plate,id)=> {
+        plate.style.top = `${Math.floor(id/gameSize) * 55+20}px`;
+        plate.style.left = `${id%gameSize * 55+20}px`;
+    })
+}

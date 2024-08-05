@@ -1,6 +1,7 @@
 *{
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 body {
@@ -10,33 +11,44 @@ body {
     transition: 1s;
 }
 
-#game_field,
-#game_button,
-#game_field > div {
+
+#game_button
+{   
+    width: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
-    margin: 0 auto;
+    margin: 20px auto 0;
 }
 
 #game_field,
 #game_button {
-    width: 240px;
     background: #2a1b3d;
     padding: 20px;
-    margin-top: 40px;
     border-radius: 20px;
 }
 
+#game_field {
+    
+    margin: 20px auto 0;
+    display: block;
+    position: relative;
+}
+
 #game_field > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
     height: 50px;
     width: 50px;
     color: #fff;
     background: #8265A8;
     border-radius: 5px;
-    margin: 5px;
     cursor: pointer;
+
+    transition: top 0.3s ,left 0.3s;
 }
 
 #game_button button {
