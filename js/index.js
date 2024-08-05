@@ -1,97 +1,91 @@
 const gameField = document.querySelector('#game_field');
-let gameSize = 4;
-let gameArray = [];
+const mixButton = document.querySelector('button.mix_game')
+let gameArray = [
+    [[1],[2],[3],[4]],
+    [[5],[6],[7],[8]],
+    [[9],[10],[11],[12]],
+    [[13],[14],[15],[16]]
+];
 
-function startGame() {
-    // fill matrix
-    for (let i = 0; i < gameSize; i++) {
-        let tmpArr = [];
-        for (let j = 0; j < gameSize; j++) {
-            tmpArr.push(j+i*4);
-        }
-        gameArray.push(tmpArr);
-    }
+mixButton.addEventListener('click', () => {
+    mixGame()
+})
 
-    // mix matrix
-    for (let i = 0; i < gameSize; i++) {
-        for (let j = 0; j < gameSize; j++) {
+function mixGame() {
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
             let rand1 = Math.floor(Math.random()*4);
             let rand2 = Math.floor(Math.random()*4);
 
-            let tmpNumber = gameArray[i][j];
-            gameArray[i][j] = gameArray[rand2][rand1];
-            gameArray[rand2][rand1] = tmpNumber;
+            if(rand1 == rand2 & rand1 == 3 || i == j & i == 3) continue            
+            swapElement(i,j,rand1,rand2);
         }
     }
 
     drawGame()
 }
 
-function movePlate(numberOnPlate) {
-
-    // number cords
-    let number_x,number_y;
-    for (let i = 0; i < gameSize; i++) {
-        for (let j = 0; j < gameSize; j++) {
-            if (gameArray[i][j] == numberOnPlate) {
-                number_y = i;
-                number_x = j;
-            }
-        }
-    }
-
-    // zero cords
-    let zero_x, zero_y;
-    for (let i = 0; i < gameSize; i++) {
-        for (let j = 0; j < gameSize; j++) {
-            if (gameArray[i][j] == 0) {
-                zero_y = i;
-                zero_x = j;
-            }
-        }
-    }
-
-    if ( 
-        zero_x - number_x < -1 || 
-        number_x - zero_x < -1 ||
-        zero_y - number_y < -1 || 
-        number_y - zero_y < -1 ||
-        number_x - zero_x != 0 && number_y - zero_y != 0
-    ) { 
-        console.log(`wrong click`)
-        return 0
-    }
-
-    let tmpNumber = gameArray[number_y][number_x];
-    gameArray[number_y][number_x] = 0;
-    gameArray[zero_y][zero_x] = tmpNumber;
-    
-    drawGame()
+function swapElement(y_element1,x_element1,y_element2,x_element2) {
+    let tmpElement = gameArray[y_element1][x_element1];
+    gameArray[y_element1][x_element1] = gameArray[y_element2][x_element2];
+    gameArray[y_element2][x_element2] = tmpElement;
 }
 
-let plateList = [];
 function drawGame() {
-    let strHTML = ``;
+    let tmpHTML = ""
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            tmpHTML += gameArray[i][j] == 16 ? `<div style="visibility:hidden;">${gameArray[i][j]}</div>` : `<div>${gameArray[i][j]}</div>`;
+        }
+    }
+    gameField.innerHTML = tmpHTML;
 
-    for (let i = 0; i < gameSize; i++) {
-        for (let j = 0; j < gameSize; j++) {
-            if (gameArray[i][j] == 0) {
-                strHTML += `<div style="visibility:hidden;">${gameArray[i][j]}</div>`
-            } 
-            else {
-                strHTML += `<div>${gameArray[i][j]}</div>`
-            }
+    let gamePlate = document.querySelectorAll('#game_field > div')
+    gamePlate.forEach((plate)=>{
+        plate.addEventListener('click',() => {
+            movePlate(plate.textContent);
+        })
+    })
+}
+
+function movePlate(plateNumber) {
+    let numberCords = getCords(plateNumber);
+    let zeroCords = getCords(16);
+
+    if (!clickValidate(numberCords.i,numberCords.j,zeroCords.i,zeroCords.j)) return 0;
+    swapElement(numberCords.i,numberCords.j,zeroCords.i,zeroCords.j);
+    drawGame();
+    setTimeout(()=>{checkWin()},100)
+}
+
+function getCords(number) {
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            if (gameArray[i][j] == number) return {i,j};
+        }
+    }
+}
+
+function clickValidate(y_element1,x_element1,y_element2,x_element2) {
+    if (
+        Math.max(y_element1,y_element2) - Math.min(y_element1,y_element2) > 1 ||
+        Math.max(x_element1,x_element2) - Math.min(x_element1,x_element2) > 1 ||
+        x_element1 - x_element2 != 0 && y_element1 - y_element2 != 0
+    ) {
+        return false;
+    }
+    return true;
+}
+
+function checkWin() {
+    let wrongPossition = 0;
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            if (gameArray[i][j] != i*4+j+1) wrongPossition++;
         }
     }
 
-    gameField.innerHTML = strHTML;
-
-    plateList = document.querySelectorAll('#game_field > div')
-    plateList.forEach((plate) => {
-    plate.addEventListener('click', () => {
-        movePlate(plate.textContent)
-    })
-})
+    if (wrongPossition == 0) alert('Победа')
 }
 
-startGame();
+drawGame();
