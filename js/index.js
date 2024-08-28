@@ -54,7 +54,7 @@ function drawGame() {
     // }
 
     for (let i = 0; i < 16; i++) {
-        tmpHTML += gameArray[i] == 16 ? `<div style="visibility:hidden;">${gameArray[i]}</div>` : `<div>${gameArray[i]}</div>`;
+        tmpHTML += gameArray[i] == 16 ? `<div style="visibility:hidden;" data-value-type="zero">${gameArray[i]}</div>` : `<div>${gameArray[i]}</div>`;
     }
     gameField.innerHTML = tmpHTML;
 
@@ -68,9 +68,10 @@ function drawGame() {
 // ------------------------------------------------------
 function movePlate(plateNumber) {
     let numberCords = getCords(plateNumber);
-    let zeroCords = getCords(16);
+    // let zeroCords = getCords(16);
 
-    if (!clickValidate(numberCords,zeroCords)) return 0;
+    // if (!clickValidate(numberCords,zeroCords)) return 0;
+    if (!clickValidate(numberCords)) return 0;
 
     swapElement(numberCords,zeroCords);
     drawGame();
@@ -89,19 +90,43 @@ function getCords(number) {
     }
 }
 
-function clickValidate(numberCords,zeroCords) {
-    if (
-        // Math.max(y_element1,y_element2) - Math.min(y_element1,y_element2) > 1 ||
-        // Math.max(x_element1,x_element2) - Math.min(x_element1,x_element2) > 1 ||
-        // x_element1 - x_element2 != 0 && y_element1 - y_element2 != 0
+// function clickValidate(numberCords,zeroCords) {
+//     if (
+//         // Math.max(y_element1,y_element2) - Math.min(y_element1,y_element2) > 1 ||
+//         // Math.max(x_element1,x_element2) - Math.min(x_element1,x_element2) > 1 ||
+//         // x_element1 - x_element2 != 0 && y_element1 - y_element2 != 0
 
-        Math.max(numberCords,zeroCords) - Math.min(numberCords,zeroCords) == 1 ||
-        Math.max(numberCords,zeroCords) - Math.min(numberCords,zeroCords) == 4
+//         Math.max(numberCords,zeroCords) - Math.min(numberCords,zeroCords) == 1 ||
+//         Math.max(numberCords,zeroCords) - Math.min(numberCords,zeroCords) == 4
+//     ) {
+//         return true;
+//     }
+//     return false;
+// }
+
+function clickValidate(clickedPlate) { 
+    let gamePlate = document.querySelectorAll('#game_field > div')
+
+    let rightPlate = gamePlate[clickedPlate].nextElementSibling || null;
+    let leftPlate = gamePlate[clickedPlate].previousElementSibling || null;
+    let bottomPlate = gamePlate[clickedPlate+4] || null;
+    let upPlate = gamePlate[clickedPlate-4] || null;
+
+    
+
+    if (
+        rightPlate && rightPlate.hasAttribute("data-value-type") ||
+        leftPlate && leftPlate.hasAttribute("data-value-type") ||
+        bottomPlate && bottomPlate.hasAttribute("data-value-type") ||
+        upPlate && upPlate.hasAttribute("data-value-type")
     ) {
-        return true;
+        return true
     }
-    return false;
+
+    return false
+
 }
+
 
 function checkWin() {
     let wrongPossition = 0;
