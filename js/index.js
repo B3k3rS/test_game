@@ -10,16 +10,11 @@ mixButton.addEventListener('click', () => {
 function mixGame() {
     for (let i = 0; i < 15; i++) {
         let randIndex = Math.floor(Math.random()*15);
-
-        let tmpElement = gameArray[i];
-        gameArray[i] = gameArray[randIndex]
-        gameArray[randIndex] = tmpElement; 
+        movePlate(gameField.children[i],gameField.children[randIndex])
     }
-
-    drawGame()
 }
 
-function drawGame() {
+function startGame() {
     let tmpHTML = ""
     for (let i = 0; i < 16; i++) {
         tmpHTML += gameArray[i] == 16 ? `<div data-value-index="${i}" data-value-type="empty"></div>` : `<div data-value-index="${i}">${gameArray[i]}</div>`;
@@ -34,62 +29,58 @@ function drawGame() {
     })
 }
 
-function movePlate(plate) {
+function movePlate(plate,plate2) {
     let rightPlate = plate.nextElementSibling;
     let leftPlate = plate.previousElementSibling;
     let bottomPlate = document.querySelector(`div[data-value-index="${Number(plate.dataset.valueIndex)+4}"]`);
     let upPlate = document.querySelector(`div[data-value-index="${Number(plate.dataset.valueIndex)-4}"]`);
     
     switch (true) {
+        case !!plate2:
+            gameField.insertBefore(plate,plate2);
+            swapIndex(plate,plate2)
+            break;
         case rightPlate && rightPlate.hasAttribute("data-value-type"):
-            swapElement(plate,rightPlate,'right');
+            gameField.insertBefore(rightPlate, plate)
+            swapIndex(plate,rightPlate);
             break;
         case leftPlate && leftPlate.hasAttribute("data-value-type"):
-            swapElement(plate,leftPlate,'left');            
+            gameField.insertBefore(plate, leftPlate)
+            swapIndex(plate,leftPlate);            
             break;
         case bottomPlate && bottomPlate.hasAttribute("data-value-type"):
-            swapElement(plate, bottomPlate, 'bottom');
+            gameField.insertBefore(plate,bottomPlate)
+            gameField.insertBefore(bottomPlate,gameField.children[plate.dataset.valueIndex])
+            swapIndex(plate, bottomPlate);
             break;
         case upPlate && upPlate.hasAttribute("data-value-type"):
-            swapElement(plate, upPlate, 'top');
+            gameField.insertBefore(upPlate,plate)
+            gameField.insertBefore(plate,gameField.children[upPlate.dataset.valueIndex])
+            swapIndex(plate, upPlate);
             break;
     }
 
     setTimeout(() => checkWin(), 100);
 }
 
-function swapElement(plate1,plate2,side) { 
-    switch (side) {
-        case 'right':
-            gameField.insertBefore(plate2, plate1)
-            break;
-        case 'left':
-            gameField.insertBefore(plate1, plate2)
-            break;
-        case 'top':
-            gameField.insertBefore(plate2,plate1)
-            gameField.insertBefore(plate1,gameField.children[plate2.dataset.valueIndex])
-            break;
-        case 'bottom':
-            gameField.insertBefore(plate1,plate2)
-            gameField.insertBefore(plate2,gameField.children[plate1.dataset.valueIndex])
-            break;
-    }
-
+function swapIndex(plate1,plate2) { 
     let tmpIndex = plate1.dataset.valueIndex;
     plate1.dataset.valueIndex = plate2.dataset.valueIndex;
     plate2.dataset.valueIndex = tmpIndex;
+
+    let tmpElement = gameArray[plate1.dataset.valueIndex];
+    gameArray[plate1.dataset.valueIndex] = gameArray[plate2.dataset.valueIndex]
+    gameArray[plate2.dataset.valueIndex] = tmpElement; 
 }
 
 function checkWin() {
     let wrongPossition = 0;
-
+    
     for (let i = 0; i < 15; i++) {
-        let plate = gameField.children[i]
-        if (plate.dataset.valueIndex != Number(plate.textContent)-1) wrongPossition++;
+        if (i+1 != gameArray[i]) wrongPossition++;
     }
 
     if (wrongPossition == 0) alert('Победа')
 }
 
-drawGame();
+startGame();
